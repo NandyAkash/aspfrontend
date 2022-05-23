@@ -1,12 +1,13 @@
 import React,{Component} from 'react';
 import { Table, Button, ButtonToolbar } from 'react-bootstrap';
 import { AddDepartment } from './AddDepartment';
+import { EditDepartment } from './EditDepartment';
 
 export class Department extends Component {
 
     constructor(props){
         super(props);
-        this.state={deps:[], addModalShow: false};
+        this.state={deps:[], addModalShow: false, editModalShow: false};
     }
     
     refershList() {
@@ -23,9 +24,20 @@ export class Department extends Component {
     componentDidUpdate() {
         this.refershList();
     }
+    deletedep(depid) {
+        if(window.confirm('Are you sure?')){
+            fetch(process.env.REACT_APP_API+'department/'+depid,{
+                method:'DELETE',
+                header: {
+                'Accept':'application/json',
+                'Content-Type': 'application/json'}
+            })
+        }
+    }
     render() {
-        const {deps} = this.state;
-        let addModalClose = () => this.setState({addModalShow:false}) 
+        const {deps, depid, depname} = this.state;
+        let addModalClose = () => this.setState({addModalShow:false})
+        let editModalClose = () => this.setState({editModalShow:false})
         return(
             <div>
                 <Table className='mt-4' striped bordered hover size='sm'>
@@ -41,7 +53,16 @@ export class Department extends Component {
                             <tr key={dep.DepartmentId}>
                                 <td>{dep.DepartmentId}</td>
                                 <td>{dep.DepartmentName}</td>
-                                <td>Edit / Delete</td>
+                                <td>
+                                    <ButtonToolbar>
+                                        <Button className='mr-2' variant='info' onClick={()=>{this.setState({editModalShow:true, depid: dep.DepartmentId, depname: dep.DepartmentName})}}>Edit</Button>
+                                        <Button className='mr-2' variant='danger' onClick={()=>this.deletedep(dep.DepartmentId)}>Delete</Button>
+                                        <EditDepartment show={this.state.editModalShow}
+                                        onHide={editModalClose}
+                                        depid={depid}
+                                        depname={depname}/>
+                                    </ButtonToolbar>
+                                </td>
                             </tr>
                             )}
                     </tbody>
